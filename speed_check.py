@@ -5,7 +5,7 @@ import threading
 import math
 
 carCascade = cv2.CascadeClassifier('myhaar.xml')
-video = cv2.VideoCapture('cars2.mp4')
+video = cv2.VideoCapture('cars.mp4')
 
 WIDTH = 1280
 HEIGHT = 720
@@ -33,6 +33,8 @@ def trackMultipleObjects():
 	carLocation1 = {}
 	carLocation2 = {}
 	speed = [None] * 1000
+
+	storeKeys = {}
 	
 	counter = 0
 	# Write output to video file
@@ -131,8 +133,6 @@ def trackMultipleObjects():
 
 
 		for i in carLocation1.keys():	
-
-			
 			
 			if frameCounter % 1 == 0:
 				[x1, y1, w1, h1] = carLocation1[i]
@@ -151,10 +151,15 @@ def trackMultipleObjects():
 						flag = 1
 						cv2.putText(resultImage, str(int(speed[i])) + " km/hr", (int(x1 + w1/2), int(y1-5)),cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255, 255, 255), 2)
 						if int(speed[i]) > 70 and flag != 0:
-							cv2.imwrite('overspeeders/overspeeding '+str(counter)+'.jpg',resultImage)
-							counter = counter + 1
-							print('Overspeed')
-							flag = 0
+							#cv2.imwrite('overspeeders/overspeeding '+str(counter)+'.jpg',resultImage)
+						
+							#cv2.imwrite('overspeeders/crop'+str(counter)+'.jpg',resultImagecropped)
+							storeKeys[i] = speed[i]
+							
+							#counter = counter + 1
+							#flag = 0
+
+
 
 					#print ('CarID ' + str(i) + ': speed is ' + str("%.2f" % round(speed[i], 0)) + ' km/h.\n')
 
@@ -164,6 +169,7 @@ def trackMultipleObjects():
 						#print ('CarID ' + str(i) + ' Location1: ' + str(carLocation1[i]) + ' Location2: ' + str(carLocation2[i]) + ' speed is ' + str("%.2f" % round(speed[i], 0)) + ' km/h.\n')
 					
 		cv2.imshow('result', resultImage)
+
 		# Write the frame into the file 'output.avi'
 		#out.write(resultImage)
 
@@ -172,6 +178,13 @@ def trackMultipleObjects():
 			break
 	
 	cv2.destroyAllWindows()
+	for i in storeKeys:
+		[x, y, w, h] = carLocation1[i]
+		croppedImage = resultImage[x:w,y:h]
+
+		cv2.imwrite('croppedImage',croppedImage)
+	
+	
 
 if __name__ == '__main__':
 	trackMultipleObjects()
