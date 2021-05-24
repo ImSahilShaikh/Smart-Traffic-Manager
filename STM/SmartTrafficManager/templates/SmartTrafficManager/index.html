@@ -1,0 +1,136 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Home</title>
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+</head>
+
+<body class="content">
+
+    <!--Navigation bar-->
+    <nav class="navbar navbar-expand navbar-dark bg-dark fixed-top">
+        <a class="navbar-brand mr-1">Smart Traffic Manager</a>
+
+        <ul class="navbar-nav ml-auto">
+            <li>
+                <a class="btn btn-dark border border-primary" href="{% url 'LicensePlateDetection' %}" data-target="">Numberplate Detections</a>
+            </li>
+            &nbsp;
+            <li>
+                <form action='/SpeedLimitDetection'>
+                    <button class="btn btn-dark border border-primary">Helmet Violations</button>
+                </form>
+            </li>
+            &nbsp;
+            <li>
+                <a class="btn btn-dark border border-primary" href=" {% url 'SpeedLimitDetection' %} " data-target="">Speed Limit Violations</a>
+            </li>
+            &nbsp;
+            <li>
+                <a class="btn btn-dark border border-primary" href=" {% url 'LicensePlateOCR' %} " data-target="">OCR</a>
+            </li>
+            &nbsp;
+            <li>
+                <a class="btn btn-dark border border-primary" href=" {% url 'SendEmail' %} " data-target="">Send Email to Violators</a>
+            </li>
+            &nbsp;
+            <li class="dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="badge badge-danger">Admin</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+                    <a class="dropdown-item" href="#">Settings</a>
+                    <a class="dropdown-item" href="#">Activity Log</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="">Logout</a>
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <!--Navigation side bar-->
+    <div class="sidebar bg-dark" id="mySidebar">
+        <!--C-->
+        <!--C-->
+        <a href="" id="home" style="background:whitesmoke;color: black">Pune City</a>
+        <a href="#" id="">Katraj</a>
+        <a href="" class="active"><b>Swargate</b></a>
+        <a href="" id="" class="">Deccan</a>
+        <a href="" id="" class="">Shivaji Nagar</a>
+    </div>
+    <div class="content">
+        <div class="alert alert-success fade show" style="height: 120px;" role="alert">
+            <div style="text-align:center; color: black;">
+                <strong>Data of Swargate</strong>
+                <button class="btn btn-dark border border-primary" style="float: right; margin-top: -5px;">Reset all filters</button>
+            </div>
+            <hr>
+            <div>
+                <span style="margin-inline-start: 0px; color:blueviolet;">
+              <strong>No. of violations Detected : 10</strong> 
+            </span>
+                <span style="margin-inline-start: 50px;">
+              <strong>No. of violations Resolved : 7</strong> 
+            </span>
+                <span style="margin-inline-start:50px ; color: red;">
+              <strong>No. of violations Pending : 3</strong> 
+            </span>
+
+            </div>
+        </div>
+
+        <table class="table table-hover shadow p-3 bg-white rounded" style="border: 2px solid #ddd !important;">
+            <thead class="thead-light">
+                <tr>
+                    <th>License Plate</th>
+                    <th>Name of owner</th>
+                    <th>Email of owner</th>
+                    <th>Time of Violation</th>
+                    <th>Detected Violation</th>
+                    <th>Fine Status</th>
+                </tr>
+                {% comment %} {% if show %}
+                    {% for i in show%}
+                    <tr>
+                        <td>{{ i.license_plate }}</td> 
+                        <td>{{ i.owner_name }}</td> 
+                        <td>{{ i.owner_email }}</td> 
+
+                    </tr>
+                    {% endfor %}
+                {% endif %} {% endcomment %}
+
+                {% if violators_render %}
+                    {% for i in violators_render%}
+                    <tr>
+                        <td>{{ i.license_plate }}</td> 
+                        <td>{{ i.owner_name }}</td> 
+                        <td>{{ i.owner_email }}</td> 
+                        <td>{{ i.date_time }}</td> 
+                        <td>{{ i.email_status }}</td> 
+
+                    </tr>
+                    {% endfor %}
+                {% endif %}
+
+            </thead>
+        </table>
+    </div>
+
+</body>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+
+</html>

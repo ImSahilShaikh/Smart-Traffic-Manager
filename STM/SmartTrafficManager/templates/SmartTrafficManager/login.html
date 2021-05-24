@@ -1,0 +1,47 @@
+{% load static %}
+<!DOCTYPE html>
+    <html lang="en">
+
+    <head>
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">        
+        <title>Smart Traffic Manager</title>
+    </head>
+
+    <body>
+        <nav>
+            <div class="textandlogo">
+                <div class="logo">
+                    <a class="alogo" href="index.html">Smart Traffic Manager</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="about-container">
+            <div class="about-card">
+                <div class="about-body">
+                    <div class="about-title">
+                        <strong class="title-text" style="margin: 20px 0px;"> Login</strong>
+                        <form class="loginform">
+                            <div class="formrow">
+                                <input type="text" name="username" id="username" placeholder="Username">
+                            </div>
+                            <div class="formrow">
+                                <input type="password" name="password" id="password" placeholder="Password">
+                            </div>
+                            <div id="login-button" class="formrow" style="margin-bottom: 20px;">
+                                <button id="login" type="button" name="login">Submit</button>
+                            </div>
+                            <div class="formrow" style="margin-bottom: 20px;">                               
+                                <span id="error" class='error'>incorrect Username or password</span>
+                            </div>
+                            <div class="formrow">
+                                <a href="forgot-password.php">Forgot Password?</a>
+                            </div>
+                        </form>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    </html>
