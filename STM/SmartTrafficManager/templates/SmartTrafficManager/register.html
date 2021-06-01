@@ -1,0 +1,67 @@
+{% load static %}
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Vehicle Registration</title>
+    
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/register-style.css' %}">
+    {% comment %} <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"> {% endcomment %}
+
+    
+    
+</head>
+
+<body onload="init()">
+    <div class="container">
+        <div class="register">
+            <div class="register-body">
+                <div class="title">
+                    <strong class="title-text">New Vehicle Registration</strong>
+                </div>
+                <p class="content">
+                    <form class="registerform" id="myform" action="{% url 'RegisterDB' %}" autocomplete="off" method="POST">
+                        {% csrf_token %}
+                        <li class="form-row">
+                            <label for="ownerName">Owner Name: </label>
+                            <input name="ownerName" id="ownerName" type="text" placeholder="Enter Vehicle Owner's Name" onkeyup="nameValidation()" required>
+                        </li>
+                        <li class="form-row">
+                            <label for="ownerEmail">Owner Email: </label>
+                            <input name="ownerEmail" id="ownerEmail" type="text" placeholder="Enter Vehicle Owner's Name" onkeyup="emailValidation()" required>
+                        </li>
+                        <li class="form-row">
+                            <label for="licensePlate">License Plate Number: </label>
+                            <input name="licensePlate" id="licensePlate" type="text" placeholder="Enter Vehicle's License Plate Number" onkeyup="contactValidation()" required>
+                        </li>
+                        <li class="submit-row">
+                            <button id="button"> <a href="{% url 'Home' %}"> Back to Home </a></button>
+                            <input type="submit" id="backbutton">
+                            
+                        </li>
+                        {% if check %}
+                            {% if registered %}
+                            
+                                <div class="formrow" style="margin-bottom: 20px;">                               
+                                    <span id="success" class='success'>Vehicle Registered in Database</span>
+                                </div>
+                            {% else %}
+                            
+                                <div class="formrow" style="margin-bottom: 20px;">                               
+                                    <span id="error" class='error'>Vehicle Already in database</span>
+                                </div>
+                            
+                            {% endif %}
+                        {% endif %}
+
+                        <input type="hidden" name="next" value="{{ request.GET.next }}" />
+                    </form>
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="{% static 'script.js' %}"></script>
+</html>
