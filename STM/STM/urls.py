@@ -21,10 +21,13 @@ from SmartTrafficManager import views
 
 urlpatterns = [
     path('admin/', admin.site.urls), 
-    path('home/',views.home),
+    path('home/',views.home,name="Home"),
     path('',views.login),
     path('SpeedLimitDetection/',views.SpeedLimitDetection,name="SpeedLimitDetection"),
     path('OCR/',views.ocr_licenseplate,name="LicensePlateOCR"),
     path('SendEmail',views.sendEmail,name="SendEmail"),
-    path('LicensePlateDetection',views.licenseplate_detector,name="LicensePlateDetection")
+    path('LicensePlateDetection',views.licenseplate_detector,name="LicensePlateDetection"),
+    path('RegisterNewVehicle/',views.RegisterNewVehicle,name="RegisterNewVehicle"),
+    path('RegisterDB',views.RegisterDB,name="RegisterDB"),
+    path('Login',views.Login,name="Login")
 ]

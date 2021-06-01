@@ -1,27 +1,33 @@
+#Django imports
 from django.shortcuts import render
 from django.contrib import messages
 from django.http import HttpResponse
+#Django imports
 
-# DATABASE
+# DATABASE model
 from .models import *
-#
+# DATABASE model
 
 import os
 
-# Speed Check
+#libraries required to use Speed Check
 import cv2
 import dlib
 import time
 import threading
 import math
-# Speed Check
+#libraries required to use Speed Check
 
-# OCR
+#libraries required to use OCR
 import pytesseract
 import imutils
-# OCR
+#libraries required to use OCR
 
-#DETECTOR LICENSE PLATE
+# Library to move files
+import shutil
+# Library to move files
+
+#libraries required to use LICENSE PLATE DETECTOR
 
 import os
 # comment out below line to enable tensorflow outputs
@@ -42,15 +48,9 @@ import numpy as np
 from tensorflow.compat.v1 import ConfigProto
 from tensorflow.compat.v1 import InteractiveSession
 
-#DETECTOR LICENSE PLATE
+#libraries required to use LICENSE PLATE DETECTOR
 
-# DETECTOR FLAGS
-
-
-
-# DETECTOR FLAGS
-
-#SEND EMAIL
+#libraries required to SEND EMAIL
 import smtplib 
 from email.mime.multipart import MIMEMultipart 
 from email.mime.text import MIMEText 
@@ -59,9 +59,7 @@ from email import encoders
 
 import datetime
 
-
-
-#SEND EMAIL
+#libraries required to SEND EMAIL
 
 # Create your views here.
 
@@ -72,9 +70,16 @@ def login(request):
 
 def home(request):
     # x = datetime.datetime.now()
-    # myobject = violators.objects.create(license_plate="lasjdsad",owner_name="Sahil",owner_email="sahil@gmail.com",date_time=x,email_status=1)
+    #context = {"home_display":home_display}
 
-    return render(request, "SmartTrafficManager/index.html")
+    violators_render = violators.objects.all
+
+    pending_emails = violators.objects.filter(email_status=0).count()
+    sent_emails = violators.objects.filter(email_status=1).count()
+
+    total_violations = pending_emails + sent_emails
+
+    return render(request, "SmartTrafficManager/index.html",{'violators_render':violators_render,'pending_emails':pending_emails,'sent_emails':sent_emails,'total_violations':total_violations})
 
 
 def SpeedLimitDetection(request):
@@ -94,7 +99,7 @@ def SpeedLimitDetection(request):
         d_pixels = math.sqrt(math.pow(
             location2[0] - location1[0], 2) + math.pow(location2[1] - location1[1], 2))
         # ppm = location2[2] / carWidht
-        ppm = 5.5
+        ppm = 9.5
         d_meters = d_pixels / ppm
         #print("d_pixels=" + str(d_pixels), "d_meters=" + str(d_meters))
         fps = 18
@@ -117,8 +122,8 @@ def SpeedLimitDetection(request):
 
         counter = 0
         # Write output to video file
-        out = cv2.VideoWriter('outpy.avi', cv2.VideoWriter_fourcc(
-            'M', 'J', 'P', 'G'), 10, (WIDTH, HEIGHT))
+        # out = cv2.VideoWriter('outpy.avi', cv2.VideoWriter_fourcc(
+        #     'M', 'J', 'P', 'G'), 10, (WIDTH, HEIGHT))
 
         while True:
             print("while loop of track multiple objects")
@@ -238,7 +243,7 @@ def SpeedLimitDetection(request):
                                 y1-5)), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255, 255, 255), 2)
 
                             if not i in storeKeys.keys():
-                                if int(speed[i]) > 70 and flag != 0:
+                                if int(speed[i]) > 60 and flag != 0:
 
                                     #(t_x, t_y), (t_x + t_w, t_y + t_h)
                                     SpeedCroppedImage = image[h1 +
@@ -263,7 +268,15 @@ def SpeedLimitDetection(request):
     trackMultipleObjects()
 
     messages.success(request, "Images Trained Successfully.")
-    return render(request, "SmartTrafficManager/index.html")
+
+    violators_render = violators.objects.all
+
+    pending_emails = violators.objects.filter(email_status=0).count()
+    sent_emails = violators.objects.filter(email_status=1).count()
+
+    total_violations = pending_emails + sent_emails
+
+    return render(request, "SmartTrafficManager/index.html",{'violators_render':violators_render,'pending_emails':pending_emails,'sent_emails':sent_emails,'total_violations':total_violations})
 
 def licenseplate_detector(request):
 
@@ -429,8 +442,14 @@ def licenseplate_detector(request):
         cv2.imwrite(dirpath+'/detections' + image_name + '.jpg', image)
         print("License plate detection image written Successfully")
 
+        violators_render = violators.objects.all
 
-    return render(request,"SmartTrafficManager/index.html")
+        pending_emails = violators.objects.filter(email_status=0).count()
+        sent_emails = violators.objects.filter(email_status=1).count()
+
+        total_violations = pending_emails + sent_emails
+
+    return render(request,"SmartTrafficManager/index.html",{'violators_render':violators_render,'pending_emails':pending_emails,'sent_emails':sent_emails,'total_violations':total_violations})
 
 
 def ocr_licenseplate(request):
@@ -441,14 +460,16 @@ def ocr_licenseplate(request):
 
     violators_license_numbers = set()
 
-    for i in images:
-        print(i)
+    # for i in images:
+    #     print(i)
 
     for i in images:
 
         pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
     
         imagepath = "./data/LicensePlates/"+i
+
+        print(imagepath)
 
         image = cv2.imread(imagepath)
 
@@ -508,6 +529,11 @@ def ocr_licenseplate(request):
             violators_license_numbers.add(text)
         #file.write(text)
         #file.write("\n")
+        
+        #print(i)
+        current_path = os.path.join(os.getcwd(),'data','LicensePlatesDone')
+        print(current_path)
+        shutil.move(imagepath,current_path)
         #cv2.imshow("Final Image", image)
         #cv2.waitKey(0)
         
@@ -515,78 +541,178 @@ def ocr_licenseplate(request):
             
         rto = RTO_Details.objects.filter(license_plate=i).values_list('license_plate','owner_name','owner_email')
         
+        if(RTO_Details.objects.filter(license_plate=i).count()==0):
+            print('No vehicle registered with ' +str(i) + ' this number')
+            continue
+
         for j in rto:
             cur_date_time = datetime.datetime.now()    
             myobject = violators.objects.create(license_plate=j[0],owner_name=j[1],owner_email=j[2],date_time=cur_date_time,email_status=0)    
 
     
     violators_render = violators.objects.all
+    total_violations = violators.objects.count()
+
+    pending_emails = violators.objects.filter(email_status=0).count()
+    sent_emails = violators.objects.filter(email_status=1).count()
+
+    total_violations = pending_emails + sent_emails
+
 
     context = {'violators_render':violators_render}
-    return render(request, "SmartTrafficManager/index.html",context)
+    return render(request, "SmartTrafficManager/index.html",{'violators_render':violators_render,'pending_emails':pending_emails,'sent_emails':sent_emails,'total_violations':total_violations})
 
 def sendEmail(request):
-    fromaddr = "projecttms4@gmail.com"
-    toaddr = "niranjanp9192@gmail.com"
 
-    # MIMEMultipart 
-    msg = MIMEMultipart() 
+    violator_emails = violators.objects.all().values()
 
-    # senders email address 
-    msg['From'] = fromaddr 
+    print(violator_emails)
 
-    # receivers email address 
-    msg['To'] = toaddr 
+    for i in violator_emails:
+        if not i['email_status']:
+            print(i['owner_email'])
 
-    # the subject of mail
-    msg['Subject'] = "Mailer test with attachment"
 
-    # the body of the mail 
-    body = "Hello there, this is test email"
+            fromaddr = "projecttms4@gmail.com"
+            toaddr = i['owner_email']
 
-    # attaching the body with the msg 
-    msg.attach(MIMEText(body, 'plain')) 
+            # MIMEMultipart 
+            msg = MIMEMultipart() 
 
-    #------------------Uncomment following code if you want to send attachment
+            # senders email address 
+            msg['From'] = fromaddr 
 
-    # open the file to be sent
-    # rb is a flag for readonly 
-    # filename = "demo.jpg"
-    # attachment = open("./demo.jpg", "rb") 
+            # receivers email address 
+            msg['To'] = toaddr 
 
-    # # MIMEBase
-    # attac= MIMEBase('application', 'octet-stream') 
+            # the subject of mail
+            msg['Subject'] = "Traffic Rule Violation receipt"
 
-    # # To change the payload into encoded form 
-    # attac.set_payload((attachment).read()) 
+            # the body of the mail 
+            body = 'Hello ' + str(i['owner_name']) +', It has been observed that you have violated traffic rule at ' +str(i['date_time']) + ' with your vehicle with registeration plate number: '+ str(i['license_plate'])+' we kindly request you to pay the fine associated with this traffic rule'
 
-    # # encode into base64 
-    # encoders.encode_base64(attac) 
+            # attaching the body with the msg 
+            msg.attach(MIMEText(body, 'plain')) 
 
-    # attac.add_header('Content-Disposition', "attachment; filename= %s" % filename) 
+            #------------------Uncomment following code if you want to send attachment
 
-    # # attach the instance 'p' to instance 'msg' 
-    # msg.attach(attac) 
+            # open the file to be sent
+            # rb is a flag for readonly 
+            # filename = "demo.jpg"
+            # attachment = open("./demo.jpg", "rb") 
 
-    #----------------------------End of attachment---------------------------------------
+            # # MIMEBase
+            # attac= MIMEBase('application', 'octet-stream') 
 
-    # creates SMTP session 
-    email = smtplib.SMTP('smtp.gmail.com', 587) 
+            # # To change the payload into encoded form 
+            # attac.set_payload((attachment).read()) 
 
-    # TLS for security 
-    email.starttls() 
+            # # encode into base64 
+            # encoders.encode_base64(attac) 
 
-    # authentication 
-    email.login(fromaddr, "tms@1234") 
+            # attac.add_header('Content-Disposition', "attachment; filename= %s" % filename) 
 
-    # Converts the Multipart msg into a string 
-    message = msg.as_string() 
+            # # attach the instance 'p' to instance 'msg' 
+            # msg.attach(attac) 
 
-    # sending the mail 
-    email.sendmail(fromaddr, toaddr, message) 
+            #----------------------------End of attachment---------------------------------------
 
-    print("Mail Sent")
+            # creates SMTP session 
+            email = smtplib.SMTP('smtp.gmail.com', 587) 
 
-    # terminating the session 
-    email.quit()
-    return render(request,"SmartTrafficManager/index.html")
+            # TLS for security 
+            email.starttls() 
+
+            # authentication 
+            email.login(fromaddr, "tms@1234") 
+
+            # Converts the Multipart msg into a string 
+            message = msg.as_string() 
+
+            # sending the mail 
+            email.sendmail(fromaddr, toaddr, message) 
+
+            print("Mail Sent")
+
+            email_flag = violators.objects.get(id=i['id'])
+            email_flag.email_status = 1
+            email_flag.save()
+
+            # terminating the session 
+            email.quit()
+    
+    violators_render = violators.objects.all
+
+    pending_emails = violators.objects.filter(email_status=0).count()
+    print(pending_emails)
+
+    sent_emails = violators.objects.filter(email_status=1).count()
+    print(sent_emails)
+
+    total_violations = pending_emails + sent_emails
+
+    return render(request,"SmartTrafficManager/index.html",{'violators_render':violators_render,'pending_emails':pending_emails,'sent_emails':sent_emails,'total_violations':total_violations})
+
+def RegisterNewVehicle(request):
+
+    check = False
+
+    return render(request,"SmartTrafficManager/register.html",{'check':check})
+
+def RegisterDB(request):
+    
+    license_plate = request.POST.get('licensePlate')
+    owner_name = request.POST.get('ownerName')
+    owner_email = request.POST.get('ownerEmail')
+    valuenext = request.GET.get('next')
+    #Always do this else wont work
+    
+    
+
+    print("NUMBER: ",license_plate)
+    print("NAME: ",owner_name)
+    print("EMAIL: ",owner_email)
+
+    check = RTO_Details.objects.filter(license_plate=license_plate).count()
+
+    registered = True
+
+    if(check>0):
+        print("Hello")
+        registered = False
+    else:
+        print("ELse hello")
+        check = True
+        registered = True    
+        new_entry = RTO_Details.objects.create(license_plate=license_plate,owner_name=owner_name,owner_email=owner_email)
+    
+    # print("New vehicle registered!!")
+    
+    return render(request,"SmartTrafficManager/register.html",{'registered':registered,'check':check})
+
+def Login(request):
+
+    username = request.POST.get('username')
+    password = request.POST.get('password')
+    valuenext = request.GET.get('next')
+
+    incorrect_credentials = True
+
+    print("USERNAME: ",username)
+    print("PASSWORD: ",password)
+
+    if(username=="admin" and password == "admin@123"):
+
+        violators_render = violators.objects.all
+
+        pending_emails = violators.objects.filter(email_status=0).count()
+        sent_emails = violators.objects.filter(email_status=1).count()
+
+        total_violations = pending_emails + sent_emails
+
+        return render(request,"SmartTrafficManager/index.html",{'violators_render':violators_render,'pending_emails':pending_emails,'sent_emails':sent_emails,'total_violations':total_violations})
+    else:
+
+        
+        return render(request,"SmartTrafficManager/login.html",{'credentials':incorrect_credentials})
+    

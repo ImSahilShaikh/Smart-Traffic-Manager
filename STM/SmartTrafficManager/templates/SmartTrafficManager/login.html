@@ -21,7 +21,8 @@
                 <div class="about-body">
                     <div class="about-title">
                         <strong class="title-text" style="margin: 20px 0px;"> Login</strong>
-                        <form class="loginform">
+                        <form class="loginform" action="{% url 'Login' %}" method="POST">
+                            {% csrf_token %}
                             <div class="formrow">
                                 <input type="text" name="username" id="username" placeholder="Username">
                             </div>
@@ -29,14 +30,14 @@
                                 <input type="password" name="password" id="password" placeholder="Password">
                             </div>
                             <div id="login-button" class="formrow" style="margin-bottom: 20px;">
-                                <button id="login" type="button" name="login">Submit</button>
+                                <button id="login" type="submit" name="login">Submit</button>
                             </div>
-                            <div class="formrow" style="margin-bottom: 20px;">                               
-                                <span id="error" class='error'>incorrect Username or password</span>
-                            </div>
-                            <div class="formrow">
-                                <a href="forgot-password.php">Forgot Password?</a>
-                            </div>
+                            {% if credentials %}
+                                <div class="formrow" style="margin-bottom: 20px;">                               
+                                    <span id="error" class='error'>incorrect Username or password</span>
+                                </div>
+                            {% endif %}
+                            <input type="hidden" name="next" value="{{ request.GET.next }}" />
                         </form>
                     </div>
                     

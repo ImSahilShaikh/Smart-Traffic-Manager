@@ -1,20 +1,32 @@
 div.content {
-  margin-left: 200px;
-  margin-right:10;
-  margin-top:56px;
-  padding: 10px;
-  position:relative;
+    margin-left: 200px;
+    margin-right: 10;
+    margin-top: 56px;
+    padding: 10px;
+    position: relative;
 }
 
-th{
-  width: 0px;
+th {
+    width: 0px;
 }
 
-.resolved{
-  color: green;
+.resolved {
+    color: #00C851;
 }
 
-.pending{
-  text-decoration: bold;
-  color:red;
+.pending {
+    text-decoration: bold;
+    color: red;
+}
+
+.violations-counters {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.contents-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
